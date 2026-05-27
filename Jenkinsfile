@@ -16,10 +16,28 @@ pipeline {
                 sh '''
                     ls -la
                     npm --version
+                    node --version
                     npm ci
                     npm run build
                     ls -la
                 '''
+            }
+        stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    // Run the container on the node specified at the
+                    // top-level of the Pipeline, in the same workspace,
+                    // rather than on a new node entirely:
+                    reuseNode true
+                }
+            }
+            steps {
+                echo 'Running tests...'
+                sh '''
+                    test -f build/index.html
+                    npm test
+                '''            
             }
         }
     }
